@@ -3,10 +3,15 @@ from __future__ import annotations
 import json
 import plistlib
 import unittest
+from unittest import mock
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from vst_scanning_tool import ManufacturerNormalizer, scan_paths
+from vst_scanning_tool import (
+    ManufacturerNormalizer,
+    discover_windows_plugin_paths,
+    scan_paths,
+)
 
 
 def _write_vst3_plugin(root: Path, name: str, manufacturer: str, identifier: str) -> Path:
@@ -83,6 +88,12 @@ class ScannerTests(unittest.TestCase):
             self.assertEqual(len(records), 1)
             self.assertEqual(records[0].manufacturer, "Acustica Audio")
             self.assertEqual(records[0].name, "Aquarius")
+
+
+class WindowsPathDiscoveryTests(unittest.TestCase):
+    def test_discovery_is_noop_on_non_windows(self):
+        with mock.patch("vst_scanning_tool.windows_paths.sys.platform", "linux"):
+            self.assertEqual(discover_windows_plugin_paths(), [])
 
 
 if __name__ == "__main__":
